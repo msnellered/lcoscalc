@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LCOS Comparison Tool</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background-color: #f4f7f6;
+        }
+
+        h1,
+        h2 {
+            color: #333;
+            text-align: center;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            width: 100%;
+            max-width: 1200px;
+            margin-bottom: 20px;
+        }
+
+        .input-section {
+            background-color: #ffffff;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 10px;
+            width: 45%;
+            min-width: 300px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-section h3 {
+            margin-top: 0;
+            color: #0056b3;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .input-group {
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .input-group label {
+            flex-basis: 60%;
+            margin-right: 10px;
+            font-size: 0.9em;
+            color: #555;
+        }
+
+        .input-group input {
+            flex-basis: 35%;
+            padding: 6px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 0.9em;
+            text-align: right;
+        }
+
+        /* Style number inputs to prevent arrows crowding */
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        #chart-container {
+            width: 100%;
+            max-width: 900px;
+            margin-top: 20px;
+            background-color: #ffffff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        canvas {
+            width: 100% !important;
+            /* Make canvas responsive */
+            height: auto;
+        }
+
+        /* Tooltip styling */
+        .chartjs-tooltip {
+            opacity: 1;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border-radius: 3px;
+            padding: 6px;
+            font-size: 0.85em;
+            transition: all .1s ease;
+            pointer-events: none;
+            position: absolute;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Levelized Cost of Storage (LCOS) Comparison</h1>
+
+    <div class="container">
+        <!-- Battery 1 Inputs -->
+        <div class="input-section">
+            <h3>Battery 1 Parameters (Samsung)</h3>
+            <div class="input-group">
+                <label for="b1_name">Name:</label>
+                <input type="text" id="b1_name" value="Samsung">
+            </div>
+            <div class="input-group">
+                <label for="b1_capacity">Nominal Capacity (kWh):</label>
+                <input type="number" id="b1_capacity" value="32.6" step="0.1">
+            </div>
+            <div class="input-group">
+                <label for="b1_capex_kwh">CAPEX ($/kWh):</label>
+                <input type="number" id="b1_capex_kwh" value="115" step="1">
+            </div>
+            <div class="input-group">
+                <label for="b1_opex_kwh_yr">OPEX ($/kWh/year):</label>
+                <input type="number" id="b1_opex_kwh_yr" value="8" step="0.1">
+            </div>
+            <div class="input-group">
+                <label for="b1_cycle_life">Cycle Life (cycles):</label>
+                <input type="number" id="b1_cycle_life" value="6000" step="100">
+            </div>
+            <div class="input-group">
+                <label for="b1_rte">Round Trip Efficiency (%):</label>
+                <input type="number" id="b1_rte" value="95" step="1" min="0" max="100">
+            </div>
+            <div class="input-group">
+                <label for="b1_dod">Depth of Discharge (%):</label>
+                <input type="number" id="b1_dod" value="90" step="1" min="0" max="100">
+            </div>
+            <div class="input-group">
+                <label for="b1_salvage_value">Salvage Value ($):</label>
+                <input type="number" id="b1_salvage_value" value="0" step="1">
+            </div>
+        </div>
+
+        <!-- Battery 2 Inputs -->
+        <div class="input-section">
+            <h3>Battery 2 Parameters (Hycap)</h3>
+            <div class="input-group">
+                <label for="b2_name">Name:</label>
+                <input type="text" id="b2_name" value="Hycap">
+            </div>
+            <div class="input-group">
+                <label for="b2_capacity">Nominal Capacity (kWh):</label>
+                <input type="number" id="b2_capacity" value="48.38" step="0.1">
+            </div>
+            <div class="input-group">
+                <label for="b2_capex_kwh">CAPEX ($/kWh):</label>
+                <input type="number" id="b2_capex_kwh" value="820" step="1">
+            </div>
+            <div class="input-group">
+                <label for="b2_opex_kwh_yr">OPEX ($/kWh/year):</label>
+                <input type="number" id="b2_opex_kwh_yr" value="1" step="0.1">
+            </div>
+            <div class="input-group">
+                <label for="b2_cycle_life">Cycle Life (cycles):</label>
+                <input type="number" id="b2_cycle_life" value="100000" step="100">
+            </div>
+            <div class="input-group">
+                <label for="b2_rte">Round Trip Efficiency (%):</label>
+                <input type="number" id="b2_rte" value="98" step="1" min="0" max="100">
+            </div>
+            <div class="input-group">
+                <label for="b2_dod">Depth of Discharge (%):</label>
+                <input type="number" id="b2_dod" value="100" step="1" min="0" max="100">
+            </div>
+            <div class="input-group">
+                <label for="b2_salvage_value">Salvage Value ($):</label>
+                <input type="number" id="b2_salvage_value" value="0" step="1">
+            </div>
+        </div>
+
+        <!-- General Inputs -->
+        <div class="input-section" style="width: 92%;">
+            <h3>General Financial Parameters</h3>
+            <div class="input-group">
+                <label for="project_lifetime">Project Lifetime (years):</label>
+                <input type="number" id="project_lifetime" value="30" step="1">
+            </div>
+            <div class="input-group">
+                <label for="discount_rate">Discount Rate (%):</label>
+                <input type="number" id="discount_rate" value="8" step="0.1">
+            </div>
+            <div class="input-group">
+                <label for="inflation_rate">Inflation Rate (%):</label>
+                <input type="number" id="inflation_rate" value="3" step="0.1">
+            </div>
+            <div class="input-group">
+                <label for="electricity_cost">Charging Electricity Cost ($/kWh):</label>
+                <input type="number" id="electricity_cost" value="0.03" step="0.001">
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart Container -->
+    <div id="chart-container">
+        <canvas id="lcosChart"></canvas>
+    </div>
+
+    <script>
+        // Get DOM elements
+        const inputs = document.querySelectorAll('.input-section input');
+        const ctx = document.getElementById('lcosChart').getContext('2d');
+
+        // --- LCOS Calculation Function ---
+        function calculateLcos(params, generalParams, cycles_per_day) {
+            // Destructure params for easier access
+            const { capacity, capex_kwh, opex_kwh_yr, cycle_life, rte_perc, dod_perc, salvage_value, name } = params;
+            const { project_lifetime, discount_rate_perc, inflation_rate_perc, electricity_cost } = generalParams;
+
+            // --- Basic Calculations & Unit Conversions ---
+            if (!capacity || capacity <= 0 || !cycle_life || cycle_life <= 0 || !rte_perc || rte_perc <= 0) {
+                return Infinity; // Prevent division by zero or nonsensical results
+            }
+            const rte = rte_perc / 100;
+            const dod = dod_perc / 100;
+            const discount_rate = discount_rate_perc / 100;
+            const inflation_rate = inflation_rate_perc / 100;
+
+            const initial_investment = capex_kwh * capacity;
+            const annual_opex_base = opex_kwh_yr * capacity;
+
+            // --- Step A: Lifetime & Total Cycles ---
+            const max_cycles_proj = cycles_per_day * 365 * project_lifetime;
+            const actual_total_cycles = Math.min(max_cycles_proj, cycle_life);
+
+            let actual_lifetime_yrs = project_lifetime;
+            if (cycles_per_day > 0) {
+                actual_lifetime_yrs = Math.min(project_lifetime, actual_total_cycles / (cycles_per_day * 365));
+            } else {
+                actual_lifetime_yrs = project_lifetime; // Or handle 0 cycles case as needed
+            }
+            // Ensure a minimum lifetime if cycles are extremely high compared to cycle life
+            if (actual_lifetime_yrs < (1 / 365) && cycles_per_day > 0) actual_lifetime_yrs = (1 / 365);
+
+
+            // --- Step B: Total Lifetime Energy Discharged ---
+            const energy_discharged_cycle = capacity * dod;
+            const total_lifetime_energy_discharged = energy_discharged_cycle * actual_total_cycles;
+
+            if (total_lifetime_energy_discharged <= 0) {
+                return Infinity; // Cannot calculate LCOS if no energy is discharged
+            }
+
+            // --- Step C: Total Lifetime Cost (NPV) ---
+            const energy_charged_cycle = energy_discharged_cycle / rte; // Energy needed per discharge cycle
+            const annual_charging_cost_base = energy_charged_cycle * cycles_per_day * 365 * electricity_cost;
+
+            let npv_annual_costs = 0;
+            const num_years_full = Math.floor(actual_lifetime_yrs);
+            const fraction_last_year = actual_lifetime_yrs - num_years_full;
+
+            for (let n = 1; n <= num_years_full; n++) {
+                const current_opex = annual_opex_base * Math.pow(1 + inflation_rate, n - 1);
+                const current_charging_cost = annual_charging_cost_base * Math.pow(1 + inflation_rate, n - 1);
+                const total_current_year_cost = current_opex + current_charging_cost;
+                npv_annual_costs += total_current_year_cost / Math.pow(1 + discount_rate, n);
+            }
+
+            // Add fractional part of the last year if applicable
+            if (fraction_last_year > 0 && num_years_full < project_lifetime) {
+                const n = num_years_full + 1;
+                const current_opex = annual_opex_base * Math.pow(1 + inflation_rate, n - 1);
+                const current_charging_cost = annual_charging_cost_base * Math.pow(1 + inflation_rate, n - 1);
+                const total_current_year_cost = current_opex + current_charging_cost;
+                npv_annual_costs += (total_current_year_cost * fraction_last_year) / Math.pow(1 + discount_rate, actual_lifetime_yrs); // Discount over the actual fractional time
+            }
+
+            // NPV of Salvage Value (discounted from the end of actual lifetime)
+            const npv_salvage = salvage_value / Math.pow(1 + discount_rate, actual_lifetime_yrs);
+
+            const total_lifetime_cost_npv = initial_investment + npv_annual_costs - npv_salvage;
+
+            // --- Step D: Calculate LCOS ---
+            const lcos = total_lifetime_cost_npv / total_lifetime_energy_discharged;
+
+            // console.log(`CPD: ${cycles_per_day}, Name: ${name}, LifetimeYrs: ${actual_lifetime_yrs.toFixed(2)}, TotalCycles: ${actual_total_cycles.toFixed(0)}, TotalEnergy: ${total_lifetime_energy_discharged.toFixed(0)}, TotalCostNPV: ${total_lifetime_cost_npv.toFixed(2)}, LCOS: ${lcos.toFixed(4)}`); // Debugging line
+
+            return lcos;
+        }
+
+        // --- Chart Configuration ---
+        const chartLabels = Array.from({ length: 30 }, (_, i) => i + 1); // Cycles 1 to 30
+        const lcosChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: chartLabels,
+                datasets: [
+                    {
+                        label: 'Battery 1 LCOS',
+                        data: [], // To be filled by updateChart
+                        borderColor: 'rgb(75, 192, 192)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        tension: 0.1,
+                        fill: false,
+                        pointRadius: 3,
+                        pointHoverRadius: 6,
+                    },
+                    {
+                        label: 'Battery 2 LCOS',
+                        data: [], // To be filled by updateChart
+                        borderColor: 'rgb(255, 99, 132)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        tension: 0.1,
+                        fill: false,
+                        pointRadius: 3,
+                        pointHoverRadius: 6,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true, // Adjust as needed with container size
+                animation: {
+                    duration: 200 // Faster updates
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'LCOS Comparison ($/kWh) vs. Cycles per Day',
+                        font: { size: 16 }
+                    },
+                    tooltip: {
+                        enabled: true, // Use default tooltips
+                        mode: 'index',
+                        intersect: false,
+                        callbacks: {
+                            label: function (context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    label += '$' + context.parsed.y.toFixed(4) + '/kWh';
+                                }
+                                return label;
+                            }
+                        }
+                    },
+                    legend: {
+                        position: 'top',
+                    },
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Cycles per Day'
+                        },
+                        grid: {
+                            display: false
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'LCOS ($/kWh)'
+                        },
+                        beginAtZero: true,
+                        // Optional: Add formatting for currency if needed
+                        ticks: {
+                            callback: function (value, index, values) {
+                                return '$' + value.toFixed(3); // Adjust precision as needed
+                            }
+                        }
+                    }
+                },
+                interaction: {
+                    mode: 'index', // Show tooltips for both lines at the same x-index
+                    intersect: false
+                },
+                hover: {
+                    mode: 'index',
+                    intersect: false
+                }
+            }
+        });
+
+        // --- Update Function ---
+        function updateChart() {
+            // Get current values from all inputs
+            const b1Params = {
+                name: document.getElementById('b1_name').value,
+                capacity: parseFloat(document.getElementById('b1_capacity').value),
+                capex_kwh: parseFloat(document.getElementById('b1_capex_kwh').value),
+                opex_kwh_yr: parseFloat(document.getElementById('b1_opex_kwh_yr').value),
+                cycle_life: parseFloat(document.getElementById('b1_cycle_life').value),
+                rte_perc: parseFloat(document.getElementById('b1_rte').value),
+                dod_perc: parseFloat(document.getElementById('b1_dod').value),
+                salvage_value: parseFloat(document.getElementById('b1_salvage_value').value)
+            };
+            const b2Params = {
+                name: document.getElementById('b2_name').value,
+                capacity: parseFloat(document.getElementById('b2_capacity').value),
+                capex_kwh: parseFloat(document.getElementById('b2_capex_kwh').value),
+                opex_kwh_yr: parseFloat(document.getElementById('b2_opex_kwh_yr').value),
+                cycle_life: parseFloat(document.getElementById('b2_cycle_life').value),
+                rte_perc: parseFloat(document.getElementById('b2_rte').value),
+                dod_perc: parseFloat(document.getElementById('b2_dod').value),
+                salvage_value: parseFloat(document.getElementById('b2_salvage_value').value)
+            };
+            const generalParams = {
+                project_lifetime: parseFloat(document.getElementById('project_lifetime').value),
+                discount_rate_perc: parseFloat(document.getElementById('discount_rate').value),
+                inflation_rate_perc: parseFloat(document.getElementById('inflation_rate').value),
+                electricity_cost: parseFloat(document.getElementById('electricity_cost').value)
+            };
+
+            // Recalculate LCOS for each cycle rate
+            const b1LcosData = chartLabels.map(cpd => calculateLcos(b1Params, generalParams, cpd));
+            const b2LcosData = chartLabels.map(cpd => calculateLcos(b2Params, generalParams, cpd));
+
+            // Update chart data and labels
+            lcosChart.data.datasets[0].data = b1LcosData;
+            lcosChart.data.datasets[0].label = `${b1Params.name} LCOS` || 'Battery 1 LCOS'; // Update legend label
+            lcosChart.data.datasets[1].data = b2LcosData;
+            lcosChart.data.datasets[1].label = `${b2Params.name} LCOS` || 'Battery 2 LCOS'; // Update legend label
+
+            lcosChart.update(); // Redraw the chart
+        }
+
+        // --- Event Listeners ---
+        inputs.forEach(input => {
+            // Update on 'input' for immediate feedback, or 'change' if you prefer updates on blur
+            input.addEventListener('input', updateChart);
+        });
+
+        // --- Initial Chart Calculation ---
+        // Run once on load to draw the initial chart
+        updateChart();
+
+    </script>
+
+</body>
+
+</html>
